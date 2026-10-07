@@ -81,7 +81,7 @@ Teenusefail kasutab eraldi kasutajat, kaitstud süsteemifaile ja ainult raportik
 
 ## Kuidas kontrollitud
 
-16 automaatset testi koos alamkatsetega katavad päris HTTP 200/503 vastuseid, avatud ja suletud TCP-porti, kettaruumi, varunduse vanust, CLI väljumiskoode, raporti kirjutamist, piirväärtusi, vigast seadistust, aegumist ja systemd olekuid. Systemd olekute ühiktestid kasutavad kontrollitud protsessivastuseid; võrgu- ja failikatsed kasutavad päris kohalikku teenust ning faile.
+17 automaatset testi koos alamkatsetega katavad päris HTTP 200/503 vastuseid, avatud ja suletud TCP-porti, kettaruumi, varunduse vanust, CLI väljumiskoode, raporti kirjutamist, piirväärtusi, vigast seadistust, aegumist ja systemd olekuid. Systemd olekute ühiktestid kasutavad kontrollitud protsessivastuseid; võrgu- ja failikatsed kasutavad päris kohalikku teenust ning faile.
 
 GitHub Actions käivitab testid ja kolme-etapilise demo Ubuntu peal Python 3.11 ja 3.13-ga. Kui jooksval masinal on systemd, kontrollib demo ka päris `dbus.service` teenust. Iga CI käivitus salvestab oma raportid allalaaditavate artefaktidena. Hoidlas olevad [töötava süsteemi](evidence/healthy.md), [rikke](evidence/outage.md) ja [taastamise](evidence/recovered.md) raportid pärinevad kohalikust päriselt käivitatud demost.
 
