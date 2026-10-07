@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "checked_at_utc": "2026-10-07T14:56:48.706518+00:00",
+  "status": "OK",
+  "checks": [
+    {
+      "name": "Demo disk",
+      "type": "disk",
+      "status": "OK",
+      "message": "84.3% used; 72.96 GiB free",
+      "duration_ms": 0.0
+    },
+    {
+      "name": "Demo TCP",
+      "type": "tcp",
+      "status": "OK",
+      "message": "TCP connection established",
+      "duration_ms": 0.0
+    },
+    {
+      "name": "Demo HTTP",
+      "type": "http",
+      "status": "OK",
+      "message": "HTTP 200; expected 200",
+      "duration_ms": 0.0
+    },
+    {
+      "name": "Demo backup",
+      "type": "backup",
+      "status": "OK",
+      "message": "Backup age: 0.00 h",
+      "duration_ms": 0.0
+    }
+  ]
+}
