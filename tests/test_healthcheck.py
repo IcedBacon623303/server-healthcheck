@@ -150,6 +150,17 @@ class Checks(unittest.TestCase):
             with self.subTest(workers=value), self.assertRaises(ValueError):
                 hc.validate(dict(self.config(), workers=value))
 
+    def test_invalid_type_cli_returns_unknown(self):
+        for value in ['["http"]', '{ value = "http" }', '1', 'true']:
+            with self.subTest(value=value), tempfile.TemporaryDirectory() as directory:
+                config = Path(directory) / "invalid.toml"
+                config.write_text('[[checks]]\nname="bad"\ntype=' + value + '\n', encoding="utf-8")
+                result = subprocess.run([sys.executable, str(Path(hc.__file__)),
+                                         "--config", str(config)], capture_output=True, text=True)
+                self.assertEqual(result.returncode, 3)
+                self.assertIn("Configuration/report error:", result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+
     def test_duplicate_names_and_unknown_fields(self):
         first = self.config()['checks'][0]
         with self.assertRaises(ValueError):
