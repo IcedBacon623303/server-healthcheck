@@ -53,7 +53,7 @@ def validate(config):
         if not isinstance(check, dict):
             raise ValueError("Each check must be a table")
         kind, name = check.get("type"), check.get("name")
-        if kind not in fields or not isinstance(name, str) or not name.strip():
+        if not isinstance(kind, str) or kind not in fields or not isinstance(name, str) or not name.strip():
             raise ValueError("Every check needs a supported type and a non-empty name")
         if len(name) > 100 or name in names or any(ord(c) < 32 for c in name):
             raise ValueError("Check names must be unique, short and single-line")
