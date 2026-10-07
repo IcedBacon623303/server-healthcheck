@@ -1,0 +1,34 @@
+# Replace targets with services and paths on your own server.
+timeout_seconds = 3
+workers = 4
+
+[[checks]]
+name = "Root filesystem"
+type = "disk"
+path = "/"
+warn_percent = 80
+critical_percent = 90
+
+[[checks]]
+name = "Nginx service"
+type = "service"
+unit = "nginx.service"
+
+[[checks]]
+name = "Local web endpoint"
+type = "http"
+url = "http://127.0.0.1/health"
+expected_status = 200
+
+[[checks]]
+name = "PostgreSQL listener"
+type = "tcp"
+host = "127.0.0.1"
+port = 5432
+
+[[checks]]
+name = "Latest database backup"
+type = "backup"
+path = "/srv/backups/latest.sql.gz"
+warn_hours = 24
+critical_hours = 48
