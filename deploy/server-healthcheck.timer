@@ -1,0 +1,10 @@
+[Unit]
+Description=Check server health every five minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+Unit=server-healthcheck.service
+
+[Install]
+WantedBy=timers.target
