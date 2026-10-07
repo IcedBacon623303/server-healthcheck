@@ -1,0 +1,19 @@
+[Unit]
+Description=Run configured server health checks
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=healthcheck
+Group=healthcheck
+WorkingDirectory=/opt/server-healthcheck
+ExecStart=/usr/bin/python3 /opt/server-healthcheck/healthcheck.py --config /etc/server-healthcheck.toml --output /var/lib/server-healthcheck
+StateDirectory=server-healthcheck
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/server-healthcheck
+RestrictSUIDSGID=true
+UMask=0077
