@@ -1,0 +1,23 @@
+name: Tests and real integration demo
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.11', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Unit and network integration tests
+        run: python -m unittest discover -s tests -v
+      - name: Healthy, outage and recovery demo
+        run: python demo.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: integration-evidence-python-${{ matrix.python }}
+          path: evidence/
