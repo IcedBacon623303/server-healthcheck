@@ -2,9 +2,9 @@
 
 **Linuxi serveri kontrollimise tööriist** — Henri Haug · ITS24 · VOCO
 
-Väikese IT-meeskonna igapäevane küsimus: kas teenus töötab, kettal on ruumi ja viimane varundus on olemas? See tööriist teeb need kontrollid ühe seadistusfaili järgi ning koostab inimesele loetava Markdowni raporti ja masinloetava JSONi.
+See Pythoni skript kontrollib, kas serveri teenused töötavad, kettal on ruumi ja varukoopia on olemas. Kontrollid panen kirja ühte seadistusfaili. Tulemus salvestatakse loetava tabelina Markdowni faili ja andmetena JSONi faili.
 
-Projekt ühendab süsteemihalduse, võrgudiagnostika, programmeerimise ja automaatse testimise. Rakendus kasutab Python 3.11+ standardteeki; lisapakette pole vaja.
+Selles töös harjutasin serveri kontrollimist ja Pythoni kasutamist. Vaja on Python 3.11 või uuemat versiooni. Skript kasutab Pythoni enda töövahendeid, lisapakette pole vaja.
 
 ## Kiire proovimine
 
@@ -48,16 +48,16 @@ echo $?
 
 Näidis kasutab Nginxi, PostgreSQLi ja andmebaasi varundusfaili. Need on seadistusnäited, mitte selle hoidla paigaldatavad teenused. Nginxi `/health` peab tagastama HTTP 200. Vaikimisi tehakse kuni neli kontrolli korraga; tulemuste järjekord jääb seadistusfaili järjekorraks.
 
-| Olek | Väljumiskood | Tähendus |
+| Olek | Lõpukood | Tähendus |
 |---|---:|---|
 | OK | 0 | Kõik kontrollid korras |
 | WARN | 1 | Vähemalt üks hoiatus |
 | CRITICAL | 2 | Vähemalt üks rike, UNKNOWN puudub |
 | UNKNOWN | 3 | Kontrolli ei saanud usaldusväärselt teha või seadistus/raporti kirjutamine ebaõnnestus |
 
-Kui raportis on korraga CRITICAL ja UNKNOWN, on koondolek UNKNOWN; konkreetsed rikked jäävad kontrollide tabelisse nähtavaks. Seetõttu loe automatiseerimisel ka JSONi `checks` välja.
+Kui tulemuses on nii CRITICAL kui ka UNKNOWN, on üldine olek UNKNOWN. Rikked jäävad tabelisse alles. Teises programmis tulemust kasutades vaata ka JSONi `checks` osa, kus on iga kontroll eraldi.
 
-`timeout_seconds` piirab võrguoperatsiooni ja systemctl protsessi ootamist. OS-i DNS-lahendus ja kohaliku failisüsteemi päringud ei ole kõva üldtähtajaga piiratud. Kuni 16 töötegijat ja 100 kontrolli väldivad juhuslikult liiga suuri käivitusi.
+`timeout_seconds` piirab võrguoperatsiooni ja systemctl protsessi ootamist. DNS-i nimepäring ja kohalike failide lugemine võivad võtta kauem aega kui see piir. Korraga saab töötada kuni 16 kontrolli tegijat ning seadistusfailis võib olla kuni 100 kontrolli.
 
 Raport kirjutatakse ajutisse faili ja asendatakse valmis kujul, nii et pooleli kirjutamist lugejale ei avaldata. JSONi ja Markdowni failid vahetatakse eraldi; nende UTC ajatempel näitab, kas need pärinevad samast käivitusest.
 
@@ -68,7 +68,7 @@ Raport kirjutatakse ajutisse faili ja asendatakse valmis kujul, nii et pooleli k
 1. Loo süsteemikasutaja `healthcheck` ja paiguta kood `/opt/server-healthcheck` alla.
 2. Paiguta kohandatud seadistus `/etc/server-healthcheck.toml` faili.
 3. Anna kasutajale seadistuse ja valitud varundusfaili lugemisõigus. Varundust hoia `/srv/backups` all või kohanda kaitsepiire teadlikult.
-4. Kopeeri mõlemad unit-failid `/etc/systemd/system` alla ja käivita:
+4. Kopeeri teenuse ja taimeri failid `/etc/systemd/system` alla ja käivita:
 
 ```bash
 sudo systemctl daemon-reload
@@ -79,11 +79,11 @@ journalctl -u server-healthcheck.service -n 30
 
 Teenusefail kasutab eraldi kasutajat, kaitstud süsteemifaile ja ainult raportikausta kirjutusõigust. `ProtectHome=true` tõttu ei saa see lugeda kodukataloogi varundusi. WARN, CRITICAL ja UNKNOWN kajastuvad oneshot-teenuse ebaõnnestunud olekuna ning raport säilitab täpse põhjuse. Paigaldusnäidist pole sinu arvutis süsteemiteenusena aktiveeritud.
 
-## Kuidas kontrollitud
+## Kuidas kontrollisin?
 
-17 automaatset testi koos alamkatsetega katavad päris HTTP 200/503 vastuseid, avatud ja suletud TCP-porti, kettaruumi, varunduse vanust, CLI väljumiskoode, raporti kirjutamist, piirväärtusi, vigast seadistust, aegumist ja systemd olekuid. Systemd olekute ühiktestid kasutavad kontrollitud protsessivastuseid; võrgu- ja failikatsed kasutavad päris kohalikku teenust ning faile.
+17 automaatset testi kontrollivad päris HTTP 200/503 vastuseid, avatud ja suletud TCP-porti, kettaruumi, varunduse vanust, CLI väljumiskoode, raporti kirjutamist, piirväärtusi, vigast seadistust, aegumist ja systemd olekuid. Systemd teenuste testides on teenuse vastused ette antud. Võrgu ja failide testides kasutatakse päris kohalikku teenust ning faile.
 
-GitHub Actions käivitab testid ja kolme-etapilise demo Ubuntu peal Python 3.11 ja 3.13-ga. Kui jooksval masinal on systemd, kontrollib demo ka päris `dbus.service` teenust. Iga CI käivitus salvestab oma raportid allalaaditavate artefaktidena. Hoidlas olevad [töötava süsteemi](evidence/healthy.md), [rikke](evidence/outage.md) ja [taastamise](evidence/recovered.md) raportid pärinevad kohalikust päriselt käivitatud demost.
+GitHub Actions käivitab testid ja kolme-etapilise demo Ubuntu peal Python 3.11 ja 3.13-ga. Kui jooksval masinal on systemd, kontrollib demo ka päris `dbus.service` teenust. Iga automaatse kontrolli järel saab tulemuste failid GitHubist alla laadida. Hoidlas olevad [töötava süsteemi](evidence/healthy.md), [rikke](evidence/outage.md) ja [taastamise](evidence/recovered.md) raportid pärinevad kohalikust päriselt käivitatud demost.
 
 ## Tehnilised valikud
 
@@ -91,9 +91,9 @@ GitHub Actions käivitab testid ja kolme-etapilise demo Ubuntu peal Python 3.11 
 - Teenuse kontroll kasutab argumentide loendit ja `shell=False`. Seadistus ei luba suvaliste käskude käivitamist.
 - HTTPS kontrollib sertifikaadi usaldust ja hostinime. Ümbersuunamisi automaatselt ei järgita.
 - HTTP kontroll ei laadi vastuse sisu ega lisa autentimisandmeid. URL-is pole lubatud paroole ega päringuparameetreid.
-- Tööriist jälgib ja raporteerib; teenuste parandamine jääb administraatori otsuseks.
+- Skript näitab probleeme. Teenuseid see ise ei paranda ega taaskäivita.
 
-## Projektiga vestluseks valmistumine
+## Mida ise proovida?
 
 Proovi ise muuta üks HTTP vastus 503-ks ja üks varundus vanaks. Seejärel selgita raporti abil, miks avatud TCP-port ei tähenda töötavat veebirakendust, miks UNKNOWN erineb rikkest ning miks värske varundusfail vajab eraldi taastamiskatset.
 
