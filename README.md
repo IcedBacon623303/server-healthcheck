@@ -1,3 +1,5 @@
+[![Automaatsed kontrollid](https://github.com/IcedBacon623303/server-healthcheck/actions/workflows/check.yml/badge.svg)](https://github.com/IcedBacon623303/server-healthcheck/actions/workflows/check.yml)
+
 # Server Healthcheck
 
 **Linuxi serveri kontrollimise tööriist** — Henri Haug · ITS24 · VOCO
@@ -100,3 +102,27 @@ Proovi ise muuta üks HTTP vastus 503-ks ja üks varundus vanaks. Seejärel selg
 Kood, dokumentatsioon ja testid on koostatud Codexi abiga. Projekt on õppelabori tööriist, mida saab iseseisvalt käivitada ja edasi arendada.
 
 Tehnilised viited: [systemctl](https://www.man7.org/linux/man-pages/man1/systemctl.1.html), [Python subprocess](https://docs.python.org/3/library/subprocess.html), [TLS kontroll](https://docs.python.org/3/library/ssl.html).
+
+
+## Kui kontroll annab häire
+
+1. Ava raport ja vaata iga kontrolli tulemust. Üldine olek üksi ei ütle, milline teenus või ühendus vajab tähelepanu.
+2. Võrdle vea juures olevat aadressi, teenusenime või failiteed oma seadistusega. UNKNOWN korral kontrolli ka lugemisõigust ning vajalike töövahendite olemasolu.
+3. Pärast põhjuse parandamist käivita sama kontroll uuesti. Võrdle raporti aega ja konkreetse kontrolli tulemust.
+
+Ajastatud käivituse kontrollimiseks:
+
+```bash
+systemctl status server-healthcheck.timer --no-pager
+journalctl -u server-healthcheck.service -n 30 --no-pager
+```
+
+Teenuse tüüp on oneshot: pärast edukat kontrolli võib teenus olla inactive (dead). See on normaalne. Taimer peab jääma ootele; viimase kontrolli täpne tulemus on raportis ja teenuse logis.
+
+Ajastatud kontrollide peatamiseks:
+
+```bash
+sudo systemctl disable --now server-healthcheck.timer
+```
+
+See peatab järgmised ajastatud käivitused. Juba kirjutatud raportid jäävad alles.
